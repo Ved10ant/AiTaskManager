@@ -1,7 +1,7 @@
-const User = require("../models/userModel");
-const Task = require("../models/taskModel");
+import User from "../models/User.js";
+import Task from "../models/Task.js";
 
-exports.getDashboardStates = async (req, res) => {
+export const getDashboardStates = async (req, res) => {
     const totalEmployees = await User.countDocuments({ role: "employee" })
     const activeTasks = await Task.countDocuments(
         { status: { $in: ["active", 'pending'] } }
@@ -20,7 +20,7 @@ exports.getDashboardStates = async (req, res) => {
         OverLoadEmployees
     })
 }
-exports.getWorkloadDistribution = async (req, res) => {
+export const getWorkloadDistribution = async (req, res) => {
     const data = await User.aggregate([
         { $match: { role: "employee" } },
         {

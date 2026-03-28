@@ -44,7 +44,7 @@ export const loginUser = async (req, res) => {
             return res.status(401).json({ message: "Invalid credentials" });
         }
 
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "30d" });
+        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "30d" });
         res.status(200).json({
             token,
             user: {
@@ -56,6 +56,19 @@ export const loginUser = async (req, res) => {
         });
     } catch (error) {
         res.status(500).json({ message: "Error logging in", error: error.message });
+        console.log(error);
+    }
+};
+
+export const getProfile = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).select("-password");
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        res.status(200).json(user);
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching profile", error: error.message });
         console.log(error);
     }
 };

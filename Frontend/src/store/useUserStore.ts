@@ -1,27 +1,31 @@
 import { create } from 'zustand'
 
 export interface User {
-    id: string, name: string, email: string
+    id: string;
+    name: string;
+    email: string;
+    role: string;
 }
 
 interface UserStore {
     user: User | null;
     token: string | null;
-    setAuth: (user: User, token: string) => void
-    setUser: (user: User | null) => void
+    setAuth: (user: User, token: string) => void;
+    setUser: (user: User | null) => void;
     setToken: (token: string | null) => void;
     logout: () => void;
 }
 
-const initialToken = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+const initialToken = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 const initialUserJson = typeof window !== "undefined" ? localStorage.getItem("user") : null;
 
 export const useUserStore = create<UserStore>((set) => ({
     user: initialUserJson ? JSON.parse(initialUserJson) : null,
     token: initialToken,
     setAuth: (user, token) => {
-        localStorage.setItem('token', token)
-        localStorage.setItem('user', JSON.stringify(user))
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(user));
+        set({ user, token });
     },
     setUser: (user) => {
         if (user) localStorage.setItem("user", JSON.stringify(user));

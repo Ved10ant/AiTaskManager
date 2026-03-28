@@ -1,5 +1,8 @@
 import React, { useState } from "react";
 import { useTasks } from "../features/tasks/hooks/useTasks";
+import { allocateTask } from "../features/allocation/services/allocationService";
+import BestCandidate from "./BestCandidate";
+import BestCandidateModal from "../features/allocation/components/BestCandidateModal";
 const TaskPage: React.FC = () => {
     const { tasks, loading, error, createTask } = useTasks();
 
@@ -9,6 +12,9 @@ const TaskPage: React.FC = () => {
     const [deadline, setDeadline] = useState("");
     const [priority, setPriority] = useState("medium");
     const [creating, setCreating] = useState(false);
+
+    const [selectedTask, setSelectedTask] = useState<any>(null)
+    const [showBestCandidate, setShowBestCandidate] = useState(false)
 
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -22,24 +28,34 @@ const TaskPage: React.FC = () => {
                 priority,
                 creating
             }
-            await createTask(payload)
+            const taskId = await createTask(payload)
+            const allocationResult = await allocateTask(taskId._id)
+            console.log("Allocation Result", allocationResult)
             setTitle("")
             setDescription("")
             setRequiredSkills("")
             setDeadline("")
             setPriority("medium")
             setCreating(false)
+            setShowBestCandidate(true)
+            setSelectedTask(allocationResult)
         } catch (error) {
             console.error("Error creating task", error)
         } finally {
             setCreating(false)
         }
     }
+
+    const handleAssigned = (updatedTask: any) => {
+        setSelectedTask(updatedTask)
+        setShowBestCandidate(false)
+        alert("Task Assigned Successfully")
+    }
     return (
         <div className="p-4">
             <h1 className="text-2xl mb-4">Tasks</h1>
             <section className="mb-6">
-                <h2 className="font-semibold mb-2">Create Task</h2>
+                <h2 className="font-semibold mb-2">Create Task </h2>
                 <form onSubmit={handleCreate} className="space-y-2 max-w-lg">
                     <input
                         required
@@ -96,6 +112,31 @@ const TaskPage: React.FC = () => {
                     ))}
                 </div>
             </section>
+
+            {showBestCandidate && selectedTask && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                    <div className="bg-white p-6 rounded-lg max-w-md w-full">
+                        <BestCandidate
+                            data={selectedTask}
+                            taskId={selectedTask._id}
+                            onClose={() => setShowBestCandidate(false)}
+                            onAssigned={handleAssigned}
+                        />
+                    </div>
+                </div>
+            )}
+            <div>
+                {/* ...existing create form and task list... */}
+
+                {showBestCandidate && selectedTask && (
+                    <BestCandidateModal
+                        data={selectedTask} 
+                        taskId={selectedTask._id}
+                        onClose={() => setShowBestCandidate(false)}
+                        onAssigned={handleAssigned}
+                    />
+                )}
+            </div>
         </div >
     )
 }

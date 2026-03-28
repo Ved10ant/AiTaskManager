@@ -1,11 +1,12 @@
-const express = require("express");
-const protect = require("../middleware/authMiddleware");
-const { getDashboardStates, getWorkloadDistribution } = require("../controllers/adminController");
-const authorization = require("../middleware/roleMiddleware");
+import express from "express";
+import { protect } from "../middlewares/authMiddleware.js";
+import { getDashboardStates, getWorkloadDistribution } from "../controllers/adminController.js";
+import authorization from "../middlewares/roleMiddleware.js";
 
 const router = express.Router()
 
 router.get('/dashboard', protect, authorization("admin"), getDashboardStates)
 router.get('/workload', protect, authorization("admin"), getWorkloadDistribution)
 
-module.exports = router
+
+export default router

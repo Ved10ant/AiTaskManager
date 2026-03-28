@@ -6,6 +6,8 @@ import ProtectedRoute from "./components/shared/ProtectedRoutes"
 import { useEffect } from "react"
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
 
+import RegisterPage from "./pages/RegisterPage";
+
 function AppRoutes() {
   const { refreshProfile, logout } = useAuth();
   useEffect(() => {
@@ -19,6 +21,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
       <Route
         path="/dashboard"
         element={
@@ -32,6 +35,7 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <TaskPage />
+            
           </ProtectedRoute>
         }
       />
@@ -41,7 +45,7 @@ function AppRoutes() {
 }
 function NavigateToFallback() {
   const token = localStorage.getItem("token");
-  return <>{token ? <Navigate to="/dashboard" /> : <Navigate to="/login" />}</>;
+  return <>{token ? <Navigate to="/dashboard" /> : <Navigate to="/register" />}</>;
 }
 
 export default function App() {
