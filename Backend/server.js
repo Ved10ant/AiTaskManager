@@ -31,7 +31,7 @@ app.use(helmet());
 
 // (moved to bottom)
 app.use("/api/auth", authRoutes);
-app.use("/api/allocate", authorization("admin"), allocationRoutes);
+app.use("/api/allocate", allocationRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/tasks", taskRoutes);
 

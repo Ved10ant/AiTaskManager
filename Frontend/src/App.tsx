@@ -5,8 +5,10 @@ import { useAuth } from "./features/auth/hooks/useAuth"
 import ProtectedRoute from "./components/shared/ProtectedRoutes"
 import { useEffect } from "react"
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
-
 import RegisterPage from "./pages/RegisterPage";
+import { Navbar } from "./components/layout/Navbar"
+import RequestPage from "./pages/RequestPage"
+import AllocatedTask from "./pages/AllocatedTask"
 
 function AppRoutes() {
   const { refreshProfile, logout } = useAuth();
@@ -26,6 +28,7 @@ function AppRoutes() {
         path="/dashboard"
         element={
           <ProtectedRoute>
+            <Navbar />
             <DashboardPage />
           </ProtectedRoute>
         }
@@ -34,8 +37,26 @@ function AppRoutes() {
         path="/tasks"
         element={
           <ProtectedRoute>
+            <Navbar />
             <TaskPage />
-            
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/requests"
+        element={
+          <ProtectedRoute>
+            <Navbar />
+            <RequestPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/allocate"
+        element={
+          <ProtectedRoute>
+            <Navbar />
+            <AllocatedTask />
           </ProtectedRoute>
         }
       />

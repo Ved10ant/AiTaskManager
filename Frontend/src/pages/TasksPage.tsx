@@ -1,144 +1,90 @@
 import React, { useState } from "react";
 import { useTasks } from "../features/tasks/hooks/useTasks";
 import { allocateTask } from "../features/allocation/services/allocationService";
-import BestCandidate from "./BestCandidate";
 import BestCandidateModal from "../features/allocation/components/BestCandidateModal";
-const TaskPage: React.FC = () => {
+import { TaskForm } from "../features/tasks/components/TaskForm";
+import { TaskList } from "../features/tasks/components/TaskList";
+import { ArrowLeft, LayoutDashboard, Database } from "lucide-react";
+import { Link } from "react-router-dom";
+import { useUserStore } from "../store/useUserStore";
+
+const TasksPage: React.FC = () => {
     const { tasks, loading, error, createTask } = useTasks();
-
-    const [title, setTitle] = useState("");
-    const [description, setDescription] = useState("");
-    const [requiredSkills, setRequiredSkills] = useState("");
-    const [deadline, setDeadline] = useState("");
-    const [priority, setPriority] = useState("medium");
+    const user = useUserStore((state) => state.user);
     const [creating, setCreating] = useState(false);
+    const [selectedTask, setSelectedTask] = useState<any>(null);
+    const [showBestCandidate, setShowBestCandidate] = useState(false);
 
-    const [selectedTask, setSelectedTask] = useState<any>(null)
-    const [showBestCandidate, setShowBestCandidate] = useState(false)
-
-    const handleCreate = async (e: React.FormEvent) => {
-        e.preventDefault()
-        setCreating(true)
+    const handleCreate = async (payload: any) => {
+        setCreating(true);
         try {
-            const payload = {
-                title,
-                description,
-                requiredSkills: requiredSkills.split(",").map((s) => s.trim()).filter(Boolean),
-                deadline,
-                priority,
-                creating
-            }
-            const taskId = await createTask(payload)
-            const allocationResult = await allocateTask(taskId._id)
-            console.log("Allocation Result", allocationResult)
-            setTitle("")
-            setDescription("")
-            setRequiredSkills("")
-            setDeadline("")
-            setPriority("medium")
-            setCreating(false)
-            setShowBestCandidate(true)
-            setSelectedTask(allocationResult)
+            const taskId = await createTask(payload);
+            const allocationResult = await allocateTask(taskId._id);
+            setShowBestCandidate(true);
+            setSelectedTask(allocationResult);
         } catch (error) {
-            console.error("Error creating task", error)
+            console.error("Error creating task", error);
+            alert("Error creating task");
         } finally {
-            setCreating(false)
+            setCreating(false);
         }
-    }
+    };
 
     const handleAssigned = (updatedTask: any) => {
-        setSelectedTask(updatedTask)
-        setShowBestCandidate(false)
-        alert("Task Assigned Successfully")
-    }
+        setSelectedTask(updatedTask);
+        setShowBestCandidate(false);
+        window.location.reload();
+    };
+
     return (
-        <div className="p-4">
-            <h1 className="text-2xl mb-4">Tasks</h1>
-            <section className="mb-6">
-                <h2 className="font-semibold mb-2">Create Task </h2>
-                <form onSubmit={handleCreate} className="space-y-2 max-w-lg">
-                    <input
-                        required
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        placeholder="Title"
-                        className="w-full p-2 border rounded"
-                    />
-                    <textarea
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        placeholder="Description"
-                        className="w-full p-2 border rounded"
-                    />
-                    <input
-                        value={requiredSkills}
-                        onChange={(e) => setRequiredSkills(e.target.value)}
-                        placeholder="Required skills (comma separated)"
-                        className="w-full p-2 border rounded"
-                    />
-                    <input
-                        value={deadline}
-                        onChange={(e) => setDeadline(e.target.value)}
-                        type="date"
-                        className="p-2 border rounded"
-                    />
-                    <select value={priority} onChange={(e) => setPriority(e.target.value)} className="p-2 border rounded">
-                        <option value="low">Low</option>
-                        <option value="medium">Medium</option>
-                        <option value="high">High</option>
-                    </select>
-
-                    <button disabled={creating} className="px-4 py-2 bg-blue-600 text-white rounded">
-                        {creating ? "Creating..." : "Create Task"}
-                    </button>
-                </form>
-            </section>
-
-            <section>
-                <h2 className="font-semibold mb-2">Task List</h2>
-
-                {loading && <p>Loading tasks...</p>}
-                {error && <p className="text-red-500">Failed to load tasks</p>}
-                {!loading && tasks.length === 0 && <p>No tasks yet</p>}
-
-                <div className="space-y-3 mt-4">
-                    {tasks.map((task: any) => (
-                        <div key={task._id} className="p-3 border rounded">
-                            <h3 className="font-semibold">{task.title}</h3>
-                            <p>{task.description}</p>
-                            <p className="text-sm text-gray-500">Skills: {(task.requiredSkills || []).join(", ")}</p>
-                            <p className="text-sm text-gray-500">Priority: {task.priority}</p>
-                        </div>
-                    ))}
-                </div>
-            </section>
-
-            {showBestCandidate && selectedTask && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                    <div className="bg-white p-6 rounded-lg max-w-md w-full">
-                        <BestCandidate
-                            data={selectedTask}
-                            taskId={selectedTask._id}
-                            onClose={() => setShowBestCandidate(false)}
-                            onAssigned={handleAssigned}
-                        />
+        <div className="min-h-screen bg-[#07051A] text-white font-sans p-6 pb-20">
+            <header className="max-w-6xl mx-auto flex items-center justify-between py-6 border-b border-indigo-900/50 mb-8">
+                <div className="flex items-center gap-4">
+                    <Link to="/dashboard" className="p-2 hover:bg-white/10 rounded-xl transition-colors text-gray-400 hover:text-white">
+                        <ArrowLeft />
+                    </Link>
+                    <div>
+                        <h1 className="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-purple-500">
+                            Central Task Hub
+                        </h1>
+                        <p className="text-gray-400 mt-1 flex items-center gap-2 text-sm"><Database size={14} className="text-purple-400"/> Synchronization Active</p>
                     </div>
                 </div>
-            )}
-            <div>
-                {/* ...existing create form and task list... */}
-
-                {showBestCandidate && selectedTask && (
-                    <BestCandidateModal
-                        data={selectedTask} 
-                        taskId={selectedTask._id}
-                        onClose={() => setShowBestCandidate(false)}
-                        onAssigned={handleAssigned}
-                    />
+                {user?.role === 'admin' && (
+                    <div className="bg-emerald-500/10 text-emerald-400 px-4 py-2 border border-emerald-500/20 rounded-xl font-bold flex items-center gap-2 shadow-[0_0_15px_rgba(16,185,129,0.15)]">
+                        ● Admin Active
+                    </div>
                 )}
-            </div>
-        </div >
-    )
-}
+            </header>
+            
+            <main className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8">
+                <div>
+                    <h2 className="text-xl font-bold mb-2 flex items-center gap-2 text-white">
+                        <LayoutDashboard className="text-purple-400" /> Active Tracking Board
+                    </h2>
+                    <p className="text-gray-400 text-sm mb-4">View and monitor all intelligent assignments globally.</p>
+                    <TaskList tasks={tasks} loading={loading} error={error} />
+                </div>
+                
+                {user?.role === 'admin' && (
+                    <div className="order-first lg:order-last">
+                        <div className="sticky top-6">
+                            <TaskForm onSubmit={handleCreate} creating={creating} />
+                        </div>
+                    </div>
+                )}
+            </main>
 
-export default TaskPage
+            {showBestCandidate && selectedTask && (
+                <BestCandidateModal
+                    data={selectedTask} 
+                    taskId={selectedTask._id}
+                    onClose={() => setShowBestCandidate(false)}
+                    onAssigned={handleAssigned}
+                />
+            )}
+        </div>
+    );
+};
+
+export default TasksPage;

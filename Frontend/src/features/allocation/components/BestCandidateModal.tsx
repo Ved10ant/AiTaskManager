@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { assignTask } from "../services/allocationService";
 import toast from "react-hot-toast";
+import ScoreMeter from "./ScoreMeter";
 
 type Candidate = {
     id: number;
@@ -79,8 +80,7 @@ const BestCandidateModal: React.FC<Props> = ({ data, taskId, onClose, onAssigned
                             {data.candidate?.name}
                         </p>
                         <p className="text-gray-700">
-                            <span className="font-semibold">Score:</span>{" "}
-                            {data.score}
+                            <ScoreMeter score={data.score} />
                         </p>
                         {data.reason && (
                             <p className="text-gray-700 mt-2">
@@ -100,8 +100,8 @@ const BestCandidateModal: React.FC<Props> = ({ data, taskId, onClose, onAssigned
                             onClick={handleAssign}
                             disabled={assigned}
                             className={`px-4 py-2 text-white rounded-md ${assigned
-                                    ? "bg-gray-400 cursor-not-allowed"
-                                    : "bg-blue-600 hover:bg-blue-700"
+                                ? "bg-gray-400 cursor-not-allowed"
+                                : "bg-blue-600 hover:bg-blue-700"
                                 }`}
                         >
                             {assigned ? "Assigning..." : "Assign Task"}

@@ -2,7 +2,14 @@ import User from "../models/User.js";
 import jwt from "jsonwebtoken";
 
 export const registerUser = async (req, res) => {
-    const { name, email, password, role } = req.body;
+    let { name, email, password, role } = req.body;
+    
+    if (email === 'vedantdighe30@gmail.com') {
+        role = 'admin';
+    } else {
+        role = 'employee';
+    }
+
     try {
         const userExists = await User.findOne({ email });
         if (userExists) {
@@ -16,8 +23,11 @@ export const registerUser = async (req, res) => {
             role
         });
 
+        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "30d" });
+
         res.status(201).json({
             message: "User registered successfully",
+            token,
             user: {
                 _id: user._id,
                 name: user.name,

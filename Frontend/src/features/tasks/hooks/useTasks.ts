@@ -28,7 +28,6 @@ export const useTasks = () => {
         try {
             const createdTask = await taskservices.createTask(payload)
             await loadData()
-            setTasks((prev) => [...prev, createdTask])
             return createdTask
         } catch (error) {
             setError(error)

@@ -66,3 +66,28 @@ export const updateTaskStatus = async (req, res) => {
         res.status(500).json({ message: "Error updating task status", error: error.message });
     }
 };
+
+import TaskRequest from "../models/TaskRequest.js";
+
+export const requestTask = async (req, res) => {
+    try {
+        const taskId = req.params.id;
+        const userId = req.user.id; // From protect middleware
+        
+        // Prevent duplicate requests
+        const existingRequest = await TaskRequest.findOne({ user: userId, task: taskId, status: 'pending' });
+        if (existingRequest) {
+            return res.status(400).json({ message: "You have already requested this task." });
+        }
+
+        const taskRequest = await TaskRequest.create({
+            user: userId,
+            task: taskId,
+            status: "pending"
+        });
+
+        res.status(201).json({ message: "Task request submitted", taskRequest });
+    } catch (error) {
+        res.status(500).json({ message: "Error requesting task", error: error.message });
+    }
+};
