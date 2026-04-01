@@ -34,9 +34,7 @@ const DashboardPage = () => {
                     <Link to="/tasks" className="px-5 py-2.5 bg-indigo-600/20 text-indigo-300 hover:bg-indigo-600/40 rounded-xl font-medium transition-all flex items-center gap-2 border border-indigo-500/30">
                         <ListTodo size={18} /> View Tasks
                     </Link>
-                    <button onClick={handleLogout} className="px-5 py-2.5 bg-red-600/10 text-red-400 hover:bg-red-600/20 rounded-xl font-medium transition-all flex items-center gap-2 border border-red-500/20">
-                        <LogOut size={18} /> Logout
-                    </button>
+
                 </div>
             </header>
 

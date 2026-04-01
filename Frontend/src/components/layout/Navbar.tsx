@@ -11,9 +11,12 @@ import {
   LayoutDashboard,
   CheckSquare,
   ClipboardList,
-  Briefcase
+  Briefcase,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { useUserStore } from '../../store/useUserStore';
+import { useThemeStore } from '../../store/useThemeStore';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface NavItem {
@@ -24,6 +27,7 @@ interface NavItem {
 
 export const Navbar: React.FC = () => {
   const { user, logout } = useUserStore();
+  const { theme, toggleTheme } = useThemeStore();
   const navigate = useNavigate();
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -58,8 +62,6 @@ export const Navbar: React.FC = () => {
   const userLinks: NavItem[] = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { name: 'My Tasks', path: '/tasks', icon: CheckSquare },
-    { name: 'Available Tasks', path: '/available-tasks', icon: Briefcase },
-    { name: 'My Requests', path: '/my-requests', icon: ClipboardList },
   ];
 
   const navLinks = user?.role === 'admin' ? adminLinks : userLinks;
@@ -111,6 +113,16 @@ export const Navbar: React.FC = () => {
           <div className="flex items-center space-x-4">
             {user ? (
               <>
+                {/* Theme Toggle */}
+                <button
+                  id="navbar-theme-toggle"
+                  onClick={toggleTheme}
+                  title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+                  className="relative p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white rounded-full transition-colors"
+                >
+                  {theme === 'dark' ? <Sun className="w-5 h-5 text-amber-400" /> : <Moon className="w-5 h-5" />}
+                </button>
+
                 {/* Notification Bell */}
                 <button className="relative p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white rounded-full transition-colors">
                   <Bell className="w-5 h-5" />
@@ -155,14 +167,6 @@ export const Navbar: React.FC = () => {
 
                         {/* Dropdown Links */}
                         <div className="py-1">
-                          <Link
-                            to="/profile"
-                            onClick={() => setIsProfileDropdownOpen(false)}
-                            className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                          >
-                            <UserIcon className="w-4 h-4 mr-3 text-gray-400 group-hover:text-gray-500" />
-                            View Profile
-                          </Link>
                           <Link
                             to="/settings"
                             onClick={() => setIsProfileDropdownOpen(false)}

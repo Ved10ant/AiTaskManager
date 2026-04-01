@@ -9,6 +9,7 @@ import RegisterPage from "./pages/RegisterPage";
 import { Navbar } from "./components/layout/Navbar"
 import RequestPage from "./pages/RequestPage"
 import AllocatedTask from "./pages/AllocatedTask"
+import Setting from "./pages/Setting"
 
 function AppRoutes() {
   const { refreshProfile, logout } = useAuth();
@@ -60,7 +61,17 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute>
+            <Navbar />
+            <Setting />
+          </ProtectedRoute>
+        }
+      />
       <Route path="*" element={<NavigateToFallback />} />
+
     </Routes>
   )
 }
