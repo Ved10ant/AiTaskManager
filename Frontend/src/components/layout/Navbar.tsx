@@ -1,19 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { NavLink, Link, useNavigate } from 'react-router-dom';
+import { NavLink, Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   Menu,
-  X,
-  Bell,
-  ChevronDown,
   LogOut,
   Settings,
-  User as UserIcon,
   LayoutDashboard,
   CheckSquare,
   ClipboardList,
   Briefcase,
   Sun,
-  Moon
+  Moon,
+  ChevronDown,
+  User,
 } from 'lucide-react';
 import { useUserStore } from '../../store/useUserStore';
 import { useThemeStore } from '../../store/useThemeStore';
@@ -35,7 +33,6 @@ export const Navbar: React.FC = () => {
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -46,10 +43,24 @@ export const Navbar: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Close mobile menu on outside tap
+  useEffect(() => {
+    if (!isMobileMenuOpen) return;
+    const handleOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('#mobile-drawer') && !target.closest('#mobile-menu-btn')) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleOutside);
+    return () => document.removeEventListener('mousedown', handleOutside);
+  }, [isMobileMenuOpen]);
+
   const handleLogout = () => {
     logout();
     navigate('/login');
     setIsProfileDropdownOpen(false);
+    setIsMobileMenuOpen(false);
   };
 
   const adminLinks: NavItem[] = [
@@ -65,15 +76,17 @@ export const Navbar: React.FC = () => {
   ];
 
   const navLinks = user?.role === 'admin' ? adminLinks : userLinks;
+  const initials = (user?.name ?? 'U').split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2);
 
-  const NavItemComponent = ({ item, onClick }: { item: NavItem; onClick?: () => void }) => (
+  /* ─── Desktop Nav Item ─── */
+  const DesktopNavItem = ({ item }: { item: NavItem }) => (
     <NavLink
       to={item.path}
-      onClick={onClick}
       className={({ isActive }) =>
-        `flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${isActive
-          ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-          : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white'
+        `flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+          isActive
+            ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white'
         }`
       }
     >
@@ -82,200 +95,272 @@ export const Navbar: React.FC = () => {
     </NavLink>
   );
 
+  /* ─── Mobile Bottom Tab Item ─── */
+  const MobileTabItem = ({ item }: { item: NavItem }) => {
+    const { pathname } = useLocation();
+    const isActive = pathname === item.path;
+    return (
+      <NavLink
+        to={item.path}
+        onClick={() => setIsMobileMenuOpen(false)}
+        className={`flex flex-col items-center justify-center gap-1 flex-1 py-2 text-xs font-medium transition-colors ${
+          isActive ? 'text-blue-400' : 'text-gray-400 hover:text-gray-200'
+        }`}
+      >
+        <item.icon className={`w-5 h-5 ${isActive ? 'text-blue-400' : 'text-gray-400'}`} />
+        <span>{item.name}</span>
+      </NavLink>
+    );
+  };
+
   return (
-    <nav className="sticky top-0 z-50 w-full bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          {/* Left Side: Logo & Desktop Navigation */}
-          <div className="flex">
-            <div className="flex-shrink-0 flex items-center">
-              <Link to="/dashboard" className="flex items-center gap-2">
+    <>
+      {/* ═══════════════════════════════════════════════════
+          DESKTOP TOP NAVBAR
+      ═══════════════════════════════════════════════════ */}
+      <nav className="hidden md:block sticky top-0 z-50 w-full bg-white/10 backdrop-blur-md border-b border-white/10 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16">
+            {/* Left: Logo + Nav Links */}
+            <div className="flex items-center">
+              <Link to="/dashboard" className="flex items-center gap-2 mr-8">
                 <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold text-xl">T</span>
                 </div>
-                <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                <span className="text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
                   Task Manager
                 </span>
               </Link>
+
+              {user && (
+                <div className="flex items-center space-x-1">
+                  {navLinks.map((item) => (
+                    <DesktopNavItem key={item.path} item={item} />
+                  ))}
+                </div>
+              )}
             </div>
 
-            {/* Desktop Navigation */}
-            {user && (
-              <div className="hidden md:ml-8 md:flex md:items-center md:space-x-2">
-                {navLinks.map((item) => (
-                  <NavItemComponent key={item.path} item={item} />
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Right Side: Actions & Profile */}
-          <div className="flex items-center space-x-4">
-            {user ? (
-              <>
-                {/* Theme Toggle */}
-                <button
-                  id="navbar-theme-toggle"
-                  onClick={toggleTheme}
-                  title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-                  className="relative p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white rounded-full transition-colors"
-                >
-                  {theme === 'dark' ? <Sun className="w-5 h-5 text-amber-400" /> : <Moon className="w-5 h-5" />}
-                </button>
-
-                {/* Notification Bell */}
-                <button className="relative p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white rounded-full transition-colors">
-                  <Bell className="w-5 h-5" />
-                  <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-white dark:border-gray-900"></span>
-                </button>
-
-                {/* Profile Dropdown */}
-                <div className="relative" ref={dropdownRef}>
+            {/* Right: Theme + Profile or Login */}
+            <div className="flex items-center space-x-3">
+              {user ? (
+                <>
+                  {/* Theme Toggle */}
                   <button
-                    onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-                    className="flex items-center gap-2 p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors focus:outline-none"
+                    id="navbar-theme-toggle"
+                    onClick={toggleTheme}
+                    title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+                    className="p-2 text-gray-300 hover:bg-white/10 hover:text-white rounded-full transition-colors"
                   >
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-medium shadow-sm">
-                      {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
-                    </div>
-                    <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${isProfileDropdownOpen ? 'rotate-180' : ''}`} />
+                    {theme === 'dark' ? <Sun className="w-5 h-5 text-amber-400" /> : <Moon className="w-5 h-5" />}
                   </button>
 
-                  <AnimatePresence>
-                    {isProfileDropdownOpen && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                        transition={{ duration: 0.15 }}
-                        className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-900 rounded-xl shadow-lg ring-1 ring-black ring-opacity-5 dark:ring-white dark:ring-opacity-10 py-2 focus:outline-none"
-                      >
-                        {/* User Info Header */}
-                        <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-800">
-                          <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                            {user.name}
-                          </p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
-                            {user.email}
-                          </p>
-                          <div className="mt-2">
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 capitalize">
-                              {user.role}
-                            </span>
+                  {/* Profile Dropdown */}
+                  <div className="relative" ref={dropdownRef}>
+                    <button
+                      onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                      className="flex items-center gap-2 p-1.5 rounded-full hover:bg-white/10 transition-colors focus:outline-none"
+                    >
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-medium shadow-sm text-sm">
+                        {initials}
+                      </div>
+                      <ChevronDown className={`w-4 h-4 text-gray-300 transition-transform duration-200 ${isProfileDropdownOpen ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    <AnimatePresence>
+                      {isProfileDropdownOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                          transition={{ duration: 0.15 }}
+                          className="absolute right-0 mt-2 w-56 bg-gray-900/95 backdrop-blur-md rounded-xl shadow-xl ring-1 ring-white/10 py-2"
+                        >
+                          <div className="px-4 py-3 border-b border-white/10">
+                            <p className="text-sm font-medium text-white truncate">{user.name}</p>
+                            <p className="text-xs text-gray-400 truncate mt-0.5">{user.email}</p>
+                            <div className="mt-2">
+                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-900/40 text-blue-300 capitalize">
+                                {user.role}
+                              </span>
+                            </div>
                           </div>
-                        </div>
-
-                        {/* Dropdown Links */}
-                        <div className="py-1">
-                          <Link
-                            to="/settings"
-                            onClick={() => setIsProfileDropdownOpen(false)}
-                            className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                          >
-                            <Settings className="w-4 h-4 mr-3 text-gray-400 group-hover:text-gray-500" />
-                            Settings
-                          </Link>
-                        </div>
-
-                        <div className="pt-1 pb-1 border-t border-gray-100 dark:border-gray-800">
-                          <button
-                            onClick={handleLogout}
-                            className="flex items-center w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                          >
-                            <LogOut className="w-4 h-4 mr-3" />
-                            Sign out
-                          </button>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                          <div className="py-1">
+                            <Link
+                              to="/settings"
+                              onClick={() => setIsProfileDropdownOpen(false)}
+                              className="flex items-center px-4 py-2 text-sm text-gray-300 hover:bg-white/10 hover:text-white transition-colors"
+                            >
+                              <Settings className="w-4 h-4 mr-3 text-gray-400" />
+                              Settings
+                            </Link>
+                          </div>
+                          <div className="pt-1 pb-1 border-t border-white/10">
+                            <button
+                              onClick={handleLogout}
+                              className="flex items-center w-full px-4 py-2 text-sm text-red-400 hover:bg-red-900/20 transition-colors"
+                            >
+                              <LogOut className="w-4 h-4 mr-3" />
+                              Sign out
+                            </button>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </>
+              ) : (
+                <div className="flex items-center space-x-3">
+                  <Link to="/login" className="text-gray-300 hover:text-white text-sm font-medium transition-colors">
+                    Log in
+                  </Link>
+                  <Link to="/register" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
+                    Sign up
+                  </Link>
                 </div>
-              </>
-            ) : (
-              /* If not logged in */
-              <div className="flex items-center space-x-3">
-                <Link
-                  to="/login"
-                  className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white text-sm font-medium transition-colors"
-                >
-                  Log in
-                </Link>
-                <Link
-                  to="/register"
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm"
-                >
-                  Sign up
-                </Link>
-              </div>
-            )}
-
-            {/* Mobile Menu Button */}
-            {user && (
-              <div className="flex items-center md:hidden">
-                <button
-                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                  className="inline-flex items-center justify-center p-2 rounded-md text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-800 transition-colors"
-                >
-                  {isMobileMenuOpen ? (
-                    <X className="block w-6 h-6" />
-                  ) : (
-                    <Menu className="block w-6 h-6" />
-                  )}
-                </button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      </nav>
 
-      {/* Mobile Menu Panel */}
+      {/* ═══════════════════════════════════════════════════
+          MOBILE BOTTOM TAB BAR
+      ═══════════════════════════════════════════════════ */}
+      {user && (
+        <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-gray-950/90 backdrop-blur-xl border-t border-white/10 flex items-stretch safe-area-pb">
+          {/* Nav Link Tabs */}
+          {navLinks.map((item) => (
+            <MobileTabItem key={item.path} item={item} />
+          ))}
+
+          {/* Menu Tab */}
+          <button
+            id="mobile-menu-btn"
+            onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+            className={`flex flex-col items-center justify-center gap-1 flex-1 py-2 text-xs font-medium transition-colors ${
+              isMobileMenuOpen ? 'text-blue-400' : 'text-gray-400 hover:text-gray-200'
+            }`}
+          >
+            <Menu className={`w-5 h-5 ${isMobileMenuOpen ? 'text-blue-400' : 'text-gray-400'}`} />
+            <span>Menu</span>
+          </button>
+        </div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════
+          MOBILE SLIDE-UP MENU DRAWER
+      ═══════════════════════════════════════════════════ */}
       <AnimatePresence>
         {isMobileMenuOpen && user && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="md:hidden overflow-hidden bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800"
-          >
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-              {navLinks.map((item) => (
-                <NavItemComponent
-                  key={item.path}
-                  item={item}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                />
-              ))}
-            </div>
-            {/* Mobile Profile Section summary */}
-            <div className="pt-4 pb-3 border-t border-gray-200 dark:border-gray-800">
-              <div className="flex items-center px-5">
-                <div className="flex-shrink-0">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-medium">
-                    {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="md:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
+              onClick={() => setIsMobileMenuOpen(false)}
+            />
+
+            {/* Drawer */}
+            <motion.div
+              id="mobile-drawer"
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+              className="md:hidden fixed bottom-16 left-0 right-0 z-50 bg-gray-950/95 backdrop-blur-xl rounded-t-3xl border border-white/10 shadow-2xl overflow-hidden"
+            >
+              {/* Drag Handle */}
+              <div className="flex justify-center pt-3 pb-1">
+                <div className="w-10 h-1 bg-white/20 rounded-full" />
+              </div>
+
+              {/* User Info */}
+              <div className="px-5 py-4 border-b border-white/10">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-lg font-bold shadow-md flex-shrink-0">
+                    {initials}
                   </div>
-                </div>
-                <div className="ml-3">
-                  <div className="text-base font-medium text-gray-800 dark:text-white">
-                    {user.name}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-base font-semibold text-white truncate">{user.name}</p>
+                    <p className="text-sm text-gray-400 truncate mt-0.5">{user.email}</p>
                   </div>
-                  <div className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                    {user.email}
-                  </div>
+                  <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-900/40 text-blue-300 border border-blue-700/30 capitalize flex-shrink-0">
+                    {user.role}
+                  </span>
                 </div>
               </div>
-              <div className="mt-3 px-2 space-y-1">
+
+              {/* Menu Items */}
+              <div className="px-4 py-3 space-y-1">
+
+                {/* Theme Toggle */}
+                <button
+                  onClick={toggleTheme}
+                  className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl bg-white/5 hover:bg-white/10 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    {theme === 'dark' ? (
+                      <Moon className="w-5 h-5 text-indigo-400" />
+                    ) : (
+                      <Sun className="w-5 h-5 text-amber-400" />
+                    )}
+                    <div className="text-left">
+                      <p className="text-sm font-medium text-white">
+                        {theme === 'dark' ? 'Dark Mode' : 'Light Mode'}
+                      </p>
+                      <p className="text-xs text-gray-400">Tap to switch theme</p>
+                    </div>
+                  </div>
+                  {/* Visual toggle pill */}
+                  <div className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${theme === 'dark' ? 'bg-blue-600' : 'bg-gray-600'}`}>
+                    <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${theme === 'dark' ? 'translate-x-6' : 'translate-x-1'}`} />
+                  </div>
+                </button>
+
+                {/* Settings */}
+                <Link
+                  to="/settings"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-white/5 hover:bg-white/10 transition-colors"
+                >
+                  <Settings className="w-5 h-5 text-gray-400" />
+                  <div className="text-left">
+                    <p className="text-sm font-medium text-white">Settings</p>
+                    <p className="text-xs text-gray-400">Account & preferences</p>
+                  </div>
+                </Link>
+
+                {/* Profile */}
+                <Link
+                  to="/settings"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl bg-white/5 hover:bg-white/10 transition-colors"
+                >
+                  <User className="w-5 h-5 text-gray-400" />
+                  <div className="text-left">
+                    <p className="text-sm font-medium text-white">Profile</p>
+                    <p className="text-xs text-gray-400">Edit your info</p>
+                  </div>
+                </Link>
+              </div>
+
+              {/* Sign Out */}
+              <div className="px-4 pb-5 pt-2">
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center px-3 py-2 rounded-md text-base font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                  className="w-full flex items-center justify-center gap-3 px-4 py-3.5 rounded-2xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 transition-colors"
                 >
-                  <LogOut className="w-5 h-5 mr-3" />
-                  Sign out
+                  <LogOut className="w-5 h-5" />
+                  <span className="text-sm font-semibold">Sign Out</span>
                 </button>
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
-    </nav>
+    </>
   );
 };

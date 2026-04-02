@@ -1,1 +1,10 @@
 @import "tailwindcss";
+
+/* ── Mobile bottom nav spacing ──────────────────────── */
+/* Adds safe padding so page content doesn't hide behind 
+   the fixed bottom tab bar (64px) on mobile */
+@media (max-width: 767px) {
+  body {
+    padding-bottom: 64px;
+  }
+}

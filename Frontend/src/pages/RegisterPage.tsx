@@ -3,7 +3,7 @@ import RegisterForm from "../features/auth/components/RegisterForm";
 
 const RegisterPage = () => {
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-900 via-purple-900 to-black p-4">
+        <div className="min-h-screen flex items-center justify-center bg-black/40 p-4">
             <div className="bg-white/10 backdrop-blur-xl border border-white/20 p-8 rounded-2xl shadow-2xl w-full max-w-md transform transition-all hover:scale-[1.01]">
                 <h2 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400 text-center mb-8">
                     Create Account

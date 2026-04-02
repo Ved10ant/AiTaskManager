@@ -10,6 +10,7 @@ import { Navbar } from "./components/layout/Navbar"
 import RequestPage from "./pages/RequestPage"
 import AllocatedTask from "./pages/AllocatedTask"
 import Setting from "./pages/Setting"
+import DynamicBackground from "./components/layout/DynamicBackground"
 
 function AppRoutes() {
   const { refreshProfile, logout } = useAuth();
@@ -83,6 +84,7 @@ function NavigateToFallback() {
 export default function App() {
   return (
     <BrowserRouter>
+      <DynamicBackground />
       <AppRoutes />
     </BrowserRouter>
   );

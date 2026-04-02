@@ -22,8 +22,8 @@ const DashboardPage = () => {
     const totalTasks = tasks.length;
 
     return (
-        <div className="min-h-screen bg-[#07051A] text-white font-sans p-6">
-            <header className="max-w-6xl mx-auto flex justify-between items-center py-6 border-b border-indigo-900/50 mb-8">
+        <div className="min-h-screen bg-transparent text-white font-sans p-4 sm:p-6 md:p-8">
+            <header className="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center py-6 border-b border-indigo-900/50 mb-8 gap-4">
                 <div>
                     <h1 className="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-purple-500">
                         Overview

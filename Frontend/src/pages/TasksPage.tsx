@@ -37,8 +37,8 @@ const TasksPage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#07051A] text-white font-sans p-6 pb-20">
-            <header className="max-w-6xl mx-auto flex items-center justify-between py-6 border-b border-indigo-900/50 mb-8">
+        <div className="min-h-screen bg-transparent text-white font-sans p-4 sm:p-6 pb-20">
+            <header className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between py-6 border-b border-indigo-900/50 gap-4 mb-8">
                 <div className="flex items-center gap-4">
                     <Link to="/dashboard" className="p-2 hover:bg-white/10 rounded-xl transition-colors text-gray-400 hover:text-white">
                         <ArrowLeft />
