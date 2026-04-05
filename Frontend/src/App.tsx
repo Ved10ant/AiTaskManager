@@ -11,6 +11,8 @@ import RequestPage from "./pages/RequestPage"
 import AllocatedTask from "./pages/AllocatedTask"
 import Setting from "./pages/Setting"
 import DynamicBackground from "./components/layout/DynamicBackground"
+import { SocketProvider } from "./context/SocketProvider"
+import { Toaster } from "react-hot-toast"
 
 function AppRoutes() {
   const { refreshProfile, logout } = useAuth();
@@ -84,8 +86,11 @@ function NavigateToFallback() {
 export default function App() {
   return (
     <BrowserRouter>
-      <DynamicBackground />
-      <AppRoutes />
+      <SocketProvider>
+        <DynamicBackground />
+        <Toaster position="top-right" />
+        <AppRoutes />
+      </SocketProvider>
     </BrowserRouter>
   );
 }

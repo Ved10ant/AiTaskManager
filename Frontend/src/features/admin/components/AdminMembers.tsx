@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { fetchMembers } from "../services/adminService";
-import { Users, Briefcase } from "lucide-react";
+import { Users, ChevronRight } from "lucide-react";
+import { MemberProfileModal } from "./MemberProfileModal";
 
 export const AdminMembers = () => {
     const [members, setMembers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [selectedMember, setSelectedMember] = useState<any>(null);
+    const [showModal, setShowModal] = useState(false);
 
     useEffect(() => {
         fetchMembers()
@@ -28,7 +31,8 @@ export const AdminMembers = () => {
                             <th className="p-3 rounded-tl-lg">Name</th>
                             <th className="p-3">Email</th>
                             <th className="p-3">Role</th>
-                            <th className="p-3 rounded-tr-lg">Workload</th>
+                            <th className="p-3">Workload</th>
+                            <th className="p-3 rounded-tr-lg">Action</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-white/10">
@@ -41,17 +45,25 @@ export const AdminMembers = () => {
                                         {member.role.toUpperCase()}
                                     </span>
                                 </td>
-                                <td className="p-3">
-                                    <span className="flex items-center gap-1.5 text-xs text-gray-400">
-                                        <Briefcase size={14} className={member.currentWorkload > 3 ? "text-amber-400" : "text-emerald-400"} />
-                                        {member.currentWorkload || 0} tasks
-                                    </span>
+                                <td className="p-3 text-right">
+                                    <button 
+                                        onClick={() => { setSelectedMember(member); setShowModal(true); }}
+                                        className="p-1.5 hover:bg-white/10 rounded-lg transition-colors text-gray-500 hover:text-cyan-400"
+                                    >
+                                        <ChevronRight size={18} />
+                                    </button>
                                 </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
             </div>
+
+            <MemberProfileModal 
+                isOpen={showModal} 
+                onClose={() => setShowModal(false)} 
+                member={selectedMember} 
+            />
         </div>
     );
 };

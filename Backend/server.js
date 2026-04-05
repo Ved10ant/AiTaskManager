@@ -29,6 +29,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 app.use(helmet());
 
+// Attach io to req for use in controllers
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
+
 // (moved to bottom)
 app.use("/api/auth", authRoutes);
 app.use("/api/allocate", allocationRoutes);

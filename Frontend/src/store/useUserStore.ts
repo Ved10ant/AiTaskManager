@@ -1,10 +1,12 @@
 import { create } from 'zustand'
 
 export interface User {
-    id: string;
+    id?: string;
+    _id?: string;
     name: string;
     email: string;
     role: string;
+    skills?: string[];
 }
 
 interface UserStore {

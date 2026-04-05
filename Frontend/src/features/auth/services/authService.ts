@@ -11,7 +11,8 @@ export interface RegisterPayload {
     name: string,
     email: string,
     password: string,
-    role?: string
+    role?: string,
+    skills?: string[],
 }
 
 export interface AuthResponse {

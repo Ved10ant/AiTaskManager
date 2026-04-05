@@ -1,4 +1,6 @@
-import { Clock, Tag, AlertCircle, CheckCircle2, Hand } from "lucide-react";
+import { Clock, Tag, AlertCircle, CheckCircle2, Sparkles, ChevronRight } from "lucide-react";
+import { useState } from "react";
+import { MemberProfileModal } from "../../admin/components/MemberProfileModal";
 import { useUserStore } from "../../../store/useUserStore";
 import { requestTaskClaim } from "../../admin/services/adminService";
 import toast from "react-hot-toast";
@@ -7,10 +9,14 @@ interface TaskListProps {
     tasks: any[];
     loading: boolean;
     error: any;
+    onRecommend?: (taskId: string) => void;
 }
 
-export const TaskList = ({ tasks, loading, error }: TaskListProps) => {
+export const TaskList = ({ tasks, loading, error, onRecommend }: TaskListProps) => {
     const user = useUserStore((state) => state.user);
+    const [selectedMember, setSelectedMember] = useState<any>(null);
+    const [showProfile, setShowProfile] = useState(false);
+    
     if (loading) return <div className="text-gray-400 p-4 border border-white/10 bg-white/5 rounded-2xl animate-pulse">Loading tasks...</div>;
     if (error) return <div className="text-red-400 p-4 border border-red-500/30 bg-red-500/10 rounded-2xl">Failed to load tasks.</div>;
 
@@ -74,6 +80,14 @@ export const TaskList = ({ tasks, loading, error }: TaskListProps) => {
                                     {task.assignedTo.name?.charAt(0)}
                                 </div>
                                 <span className="text-gray-300 font-medium text-xs truncate max-w-[100px]">{task.assignedTo.name}</span>
+                                {user?.role === 'admin' && (
+                                    <button 
+                                        onClick={() => { setSelectedMember(task.assignedTo); setShowProfile(true); }}
+                                        className="p-1 hover:bg-white/10 rounded text-gray-500 hover:text-cyan-400"
+                                    >
+                                        <ChevronRight size={14} />
+                                    </button>
+                                )}
                             </div>
                         ) : (
                             user?.role === 'employee' ? (
@@ -84,12 +98,28 @@ export const TaskList = ({ tasks, loading, error }: TaskListProps) => {
                                     <CheckCircle2 size={14} /> Request Claim
                                 </button>
                             ) : (
-                                <span className="text-xs text-gray-500 italic mt-2">Unassigned</span>
+                                <div className="flex flex-col gap-2 mt-2">
+                                    <span className="text-xs text-gray-500 italic">Unassigned</span>
+                                    {user?.role === 'admin' && onRecommend && (
+                                        <button 
+                                            onClick={() => onRecommend(task._id)}
+                                            className="text-[10px] flex items-center gap-1.5 bg-cyan-600/20 hover:bg-cyan-600/40 text-cyan-400 px-3 py-1.5 rounded-lg transition-all border border-cyan-500/30 font-bold uppercase tracking-wider"
+                                        >
+                                            <Sparkles size={12} /> Recommended
+                                        </button>
+                                    )}
+                                </div>
                             )
                         )}
                     </div>
                 </div>
             ))}
+
+            <MemberProfileModal 
+                isOpen={showProfile} 
+                onClose={() => setShowProfile(false)} 
+                member={selectedMember} 
+            />
         </div>
     );
 };

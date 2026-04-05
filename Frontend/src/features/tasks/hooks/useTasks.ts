@@ -31,6 +31,7 @@ export const useTasks = () => {
             return createdTask
         } catch (error) {
             setError(error)
+            throw error; // Rethrow so the UI can catch it
         } finally {
             setLoading(false)
         }

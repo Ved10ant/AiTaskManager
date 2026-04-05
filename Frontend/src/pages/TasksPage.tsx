@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useTasks } from "../features/tasks/hooks/useTasks";
-import { allocateTask } from "../features/allocation/services/allocationService";
+import { allocateTask, getBestCandidate } from "../features/allocation/services/allocationService";
 import BestCandidateModal from "../features/allocation/components/BestCandidateModal";
 import { TaskForm } from "../features/tasks/components/TaskForm";
 import { TaskList } from "../features/tasks/components/TaskList";
@@ -35,6 +35,16 @@ const TasksPage: React.FC = () => {
         setShowBestCandidate(false);
         window.location.reload();
     };
+    
+    const handleRecommend = async (taskId: string) => {
+        try {
+            const data = await getBestCandidate(taskId);
+            setSelectedTask({ ...data, _id: taskId });
+            setShowBestCandidate(true);
+        } catch (error) {
+            console.error("Failed to fetch recommendation", error);
+        }
+    }
 
     return (
         <div className="min-h-screen bg-transparent text-white font-sans p-4 sm:p-6 pb-20">
@@ -63,7 +73,7 @@ const TasksPage: React.FC = () => {
                         <LayoutDashboard className="text-purple-400" /> Active Tracking Board
                     </h2>
                     <p className="text-gray-400 text-sm mb-4">View and monitor all intelligent assignments globally.</p>
-                    <TaskList tasks={tasks} loading={loading} error={error} />
+                    <TaskList tasks={tasks} loading={loading} error={error} onRecommend={handleRecommend} />
                 </div>
                 
                 {user?.role === 'admin' && (

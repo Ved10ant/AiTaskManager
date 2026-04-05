@@ -12,10 +12,14 @@ import {
   Moon,
   ChevronDown,
   User,
+  Bell,
+  Trash2,
 } from 'lucide-react';
 import { useUserStore } from '../../store/useUserStore';
 import { useThemeStore } from '../../store/useThemeStore';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSocket } from '../../context/SocketProvider';
+import { useTasks } from '../../features/tasks/hooks/useTasks';
 
 interface NavItem {
   name: string;
@@ -30,6 +34,30 @@ export const Navbar: React.FC = () => {
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const { notifications, unreadCount, clearNotifications } = useSocket();
+  const { tasks } = useTasks();
+
+  // Merge runtime notifications with historical tasks
+  const displayNotifications = [...notifications];
+  if (user && user.role === 'employee') {
+    const historicalTasks = tasks.filter(t => t.assignedTo?._id === user._id || t.assignedTo === user._id || t.assignedTo?._id === user.id || t.assignedTo === user.id);
+    
+    historicalTasks.forEach(t => {
+      const isDuplicate = displayNotifications.some(n => n.message.includes(t.title));
+      if (!isDuplicate) {
+        displayNotifications.push({
+          id: `hist-${t._id || t.id}`,
+          message: `Assigned Task: ${t.title}`,
+          timestamp: t.createdAt || new Date(),
+          read: true,
+          type: "history"
+        });
+      }
+    });
+  }
+  
+  displayNotifications.sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -154,6 +182,63 @@ export const Navbar: React.FC = () => {
                   >
                     {theme === 'dark' ? <Sun className="w-5 h-5 text-amber-400" /> : <Moon className="w-5 h-5" />}
                   </button>
+                  
+                  {/* Notifications Bell */}
+                  <div className="relative">
+                    <button
+                      onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+                      className="p-2 text-gray-300 hover:bg-white/10 hover:text-white rounded-full transition-all relative"
+                    >
+                      <Bell className="w-5 h-5" />
+                      {unreadCount > 0 && (
+                        <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                          {unreadCount}
+                        </span>
+                      )}
+                    </button>
+
+                    <AnimatePresence>
+                      {isNotificationsOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                          className="absolute right-0 mt-2 w-80 bg-gray-950/95 border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-[100]"
+                        >
+                          <div className="p-4 border-b border-white/10 flex justify-between items-center">
+                            <h3 className="font-bold text-white text-sm">Notifications</h3>
+                            <button onClick={clearNotifications} className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors">
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                          
+                          <div className="max-h-[350px] overflow-y-auto custom-scrollbar">
+                            {displayNotifications.length > 0 ? (
+                              displayNotifications.map((msg) => (
+                                <div key={msg.id} className="p-4 border-b border-white/5 hover:bg-white/5 transition-colors">
+                                  <div className="flex gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-cyan-500/10 flex items-center justify-center text-cyan-400 shrink-0">
+                                      <Bell size={14} />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm text-gray-200 leading-tight mb-1">{msg.message}</p>
+                                      <p className="text-[10px] text-gray-500 uppercase font-bold">
+                                        {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', month: 'short', day: 'numeric' })}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))
+                            ) : (
+                              <div className="p-10 text-center text-gray-500 text-sm">
+                                <p>No new notifications</p>
+                              </div>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
 
                   {/* Profile Dropdown */}
                   <div className="relative" ref={dropdownRef}>

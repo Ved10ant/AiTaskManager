@@ -2,8 +2,8 @@ import User from "../models/User.js";
 import jwt from "jsonwebtoken";
 
 export const registerUser = async (req, res) => {
-    let { name, email, password, role } = req.body;
-    
+    let { name, email, password, role, skills } = req.body;
+
     if (email === 'vedantdighe30@gmail.com') {
         role = 'admin';
     } else {
@@ -20,7 +20,8 @@ export const registerUser = async (req, res) => {
             name,
             email,
             password, // Password will be hashed by the User model's pre-save hook
-            role
+            role,
+            skills: Array.isArray(skills) ? skills : [],
         });
 
         const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "30d" });
@@ -32,7 +33,8 @@ export const registerUser = async (req, res) => {
                 _id: user._id,
                 name: user.name,
                 email: user.email,
-                role: user.role
+                role: user.role,
+                skills: user.skills,
             }
         });
     } catch (error) {
@@ -61,7 +63,8 @@ export const loginUser = async (req, res) => {
                 _id: user._id,
                 name: user.name,
                 email: user.email,
-                role: user.role
+                role: user.role,
+                skills: user.skills,
             }
         });
     } catch (error) {

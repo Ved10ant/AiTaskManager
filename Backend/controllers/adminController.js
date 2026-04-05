@@ -92,9 +92,18 @@ export const updateRequestStatus = async (req, res) => {
         // Update the request status
         await TaskRequest.findByIdAndUpdate(request._id, { status: newStatus });
 
-        // Send a cleanly populated response back to frontend
         const updatedRequest = await TaskRequest.findById(request._id)
             .populate('task').populate('user');
+
+        if (req.io && updatedRequest?.user?._id) {
+            req.io.emit("notification", {
+                userId: updatedRequest.user._id,
+                message: action === "approve" 
+                    ? `Task request APPROVED: ${updatedRequest.task?.title}` 
+                    : `Task request rejected for: ${updatedRequest.task?.title}`,
+                type: "request_status"
+            });
+        }
             
         res.status(200).json({ message: `Request ${action}d successfully`, request: updatedRequest });
     } catch (error) {

@@ -1,80 +1,92 @@
-import User from '../models/User.js';
+import { analyzeTaskWithAI } from "./aiService.js";
+import User from "../models/User.js";
 
-/**
- * Calculates a match score for an employee against a task.
- * @param {Object} employee - User document
- * @param {Object} task - Task document
- * @returns {Number} Total configured score
- */
-const calculateScore = (employee, task) => {
-  // 1. Skill Match Percentage (0 - 100)
-  const requiredSkills = task.requiredSkills || [];
-  const userSkills = employee.skills || [];
-  const commonSkills = requiredSkills.filter(skill => userSkills.includes(skill));
-  const skillMatchScore = requiredSkills.length 
-    ? (commonSkills.length / requiredSkills.length) * 100 
-    : 100;
+const calculateSkillMatch = (required, userSkills) => {
+  // Defensive check for required skills (ensure it's an array)
+  const reqSkills = Array.isArray(required) ? required : [];
+  if (!reqSkills.length) return 0;
   
-  // 2. Workload Score (0 - 100) -> Inversely proportional
-  // Assuming 10 tasks is the maximum workload limit threshold
-  const workloadScore = Math.max(0, 100 - (employee.currentWorkload * 10));
+  const normalizedUserSkills = (userSkills || []).map(s => String(s).toLowerCase());
+  
+  const match = reqSkills.filter((skill) =>
+    normalizedUserSkills.some(us => us.includes(String(skill).toLowerCase()))
+  );
 
-  // 3. Availability Score
-  const availabilityScore = employee.availabilityStatus === 'available' ? 100 : 0;
-
-  // 4. Experience Score (Assuming 10 years maps to 100)
-  const experienceScore = Math.min(employee.experienceYears * 10, 100);
-
-  // 5. Performance Score (Already 0-100 scale in DB)
-  const performanceScore = employee.performanceScore || 50;
-
-  // Weighted Formula
-  const WEIGHTS = {
-    skillMatch: 0.35,  // Most important
-    availability: 0.25, // Crucial
-    workload: 0.20,    // Avoid burnout
-    experience: 0.10,
-    performance: 0.10
-  };
-
-  const totalScore = 
-    (skillMatchScore * WEIGHTS.skillMatch) +
-    (availabilityScore * WEIGHTS.availability) +
-    (workloadScore * WEIGHTS.workload) +
-    (experienceScore * WEIGHTS.experience) +
-    (performanceScore * WEIGHTS.performance);
-
-  return totalScore;
+  return match.length / reqSkills.length;
 };
 
-/**
- * Automatically assigns a task to the best candidate.
- * @param {Object} taskData - The incoming task data payload
- */
-export const autoAssignTask = async (taskData) => {
-  // Find all employees that are generally available to take tasks
-  const employees = await User.find({ role: 'employee' });
-  
-  if (!employees.length) throw new Error("No employees available to assign.");
-
-  let bestCandidate = null;
-  let highestScore = -1;
-  const evaluationLog = []; 
-
-  for (const employee of employees) {
-    const score = calculateScore(employee, taskData);
-    evaluationLog.push({ employeeId: employee._id, name: employee.name, score });
-    
-    // Check if score is the best so far
-    if (score > highestScore) {
-      highestScore = score;
-      bestCandidate = employee;
+export const findBestCandidate = async (task) => {
+  try {
+    // 1. AI analysis to extract skills and metadata
+    console.log(`Starting AI analysis for task: ${task.title}`);
+    let aiData;
+    try {
+        aiData = await analyzeTaskWithAI(
+            task.title,
+            task.description
+        );
+    } catch (aiError) {
+        console.error("Gemini AI Analysis Error:", aiError.message);
+        // Fallback to manual skills if provided
+        aiData = {
+            requiredSkills: task.requiredSkills || [],
+            difficulty: "Medium",
+            estimatedHours: 4
+        };
     }
-  }
 
-  return { 
-    assignedUser: bestCandidate, 
-    matchScore: highestScore.toFixed(2),
-    allCandidates: evaluationLog 
-  };
+    const requiredSkills = aiData?.requiredSkills || [];
+
+    // 2. Get all eligible employees
+    console.log("Searching for employees with role: employee...");
+    const users = await User.find({ role: "employee" });
+    console.log(`Found ${users.length} potential candidates.`);
+
+    if (users.length === 0) {
+        return { candidate: null, score: 0, aiInsights: aiData };
+    }
+
+    // 3. Score users based on multiple factors:
+    // - 60% Skill Match
+    // - 20% Performance Score
+    // - 20% Workload Factor (favouring those with less tasks)
+    let bestUser = null;
+    let bestScore = -1;
+
+    for (let user of users) {
+      try {
+        const skillMatch = calculateSkillMatch(
+          requiredSkills,
+          user.skills
+        );
+
+        // Normalize workload factor (0 to 1, where 1 is zero workload)
+        const currentWorkload = user.currentWorkload || 0;
+        const workloadFactor = Math.max(0, 1 - currentWorkload / 10);
+
+        const score =
+          skillMatch * 0.6 +
+          ((user.performanceScore || 50) / 100) * 0.2 +
+          workloadFactor * 0.2;
+
+          console.log(`- Candidate ${user.name}: SkillMatch=${skillMatch.toFixed(2)}, Score=${score.toFixed(2)}`);
+
+        if (score > bestScore) {
+          bestScore = score;
+          bestUser = user;
+        }
+      } catch (userScoreError) {
+        console.error(`Error scoring user ${user._id}:`, userScoreError.message);
+      }
+    }
+
+    return {
+      candidate: bestUser,
+      score: bestScore,
+      aiInsights: aiData,
+    };
+  } catch (globalError) {
+    console.error("Global error in findBestCandidate service:", globalError.message);
+    throw globalError;
+  }
 };
