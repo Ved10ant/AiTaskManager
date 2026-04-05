@@ -1,7 +1,9 @@
 import React, { useEffect, useRef } from 'react';
+import { useThemeStore } from '../../store/useThemeStore';
 
 const DynamicBackground: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { theme } = useThemeStore();
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -12,17 +14,21 @@ const DynamicBackground: React.FC = () => {
 
     let time = 0;
 
-    // Updated speed
     const speed = 0.008;
     const isInteractive = true;
-    const blendMode = 'screen' as GlobalCompositeOperation;
+    const blendMode = theme === 'dark' ? 'screen' : 'multiply';
 
-    // Updated colors
-    const blobs = [
+    // Different colors based on theme
+    const blobs = theme === 'dark' ? [
       { color: '#14184d', x: 0, y: 0, vx: 1, vy: 1, s: 1, t: 0 },
       { color: '#000000', x: 0, y: 0, vx: -1, vy: 1, s: 1, t: 2 },
       { color: '#000000', x: 0, y: 0, vx: -1, vy: -1, s: 1, t: 4 },
       { color: '#0c1045ff', x: 0, y: 0, vx: 1, vy: -1, s: 1, t: 6 }
+    ] : [
+      { color: '#e0e7ff', x: 0, y: 0, vx: 1, vy: 1, s: 1, t: 0 },
+      { color: '#f3e8ff', x: 0, y: 0, vx: -1, vy: 1, s: 1, t: 2 },
+      { color: '#dbeafe', x: 0, y: 0, vx: -1, vy: -1, s: 1, t: 4 },
+      { color: '#bfdbfe', x: 0, y: 0, vx: 1, vy: -1, s: 1, t: 6 }
     ];
 
     let mouse = { x: 0, y: 0 };
@@ -109,13 +115,15 @@ const DynamicBackground: React.FC = () => {
       }
       cancelAnimationFrame(animationFrameId);
     };
-  }, []);
+  }, [theme]);
 
   return (
     <div 
-      className="fixed inset-0 w-full h-full -z-10 overflow-hidden bg-black"
+      className={`fixed inset-0 w-full h-full -z-10 overflow-hidden transition-colors duration-500 ease-in-out ${theme === 'dark' ? 'bg-black' : 'bg-gray-50'}`}
       style={{
-        backgroundImage: 'radial-gradient(circle at 0% 0%, #14184d, transparent 80%), radial-gradient(circle at 100% 0%, #000000, transparent 80%), radial-gradient(circle at 100% 100%, #000000, transparent 80%), radial-gradient(circle at 0% 100%, #1d2487, transparent 80%)'
+        backgroundImage: theme === 'dark' 
+          ? 'radial-gradient(circle at 0% 0%, #14184d, transparent 80%), radial-gradient(circle at 100% 0%, #000000, transparent 80%), radial-gradient(circle at 100% 100%, #000000, transparent 80%), radial-gradient(circle at 0% 100%, #1d2487, transparent 80%)'
+          : 'radial-gradient(circle at 0% 0%, #e0e7ff, transparent 80%), radial-gradient(circle at 100% 0%, #f3f4f6, transparent 80%), radial-gradient(circle at 100% 100%, #f3f4f6, transparent 80%), radial-gradient(circle at 0% 100%, #bae6fd, transparent 80%)'
       }}
     >
       <canvas
