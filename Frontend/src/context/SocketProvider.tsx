@@ -53,8 +53,9 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             return;
         }
 
-        const newSocket = io("http://localhost:5001", {
-            transports: ["websocket"],
+        const socketUrl = import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_API_URL?.replace('/api', '') || "http://localhost:5001";
+        const newSocket = io(socketUrl, {
+            transports: ["websocket", "polling"],
         });
 
         newSocket.on("connect", () => {
