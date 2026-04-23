@@ -1,8 +1,8 @@
-# TaskManager - Intelligent Task Management System
+﻿# TaskManager - Intelligent Task Management System
 
 TaskManager is a modern, full-stack application designed to streamline task allocation and management using an intelligent candidate selection process. Built with a robust React frontend and a scalable Node.js/Express backend, it offers real-time updates and a premium user experience.
 
-## 🚀 Features
+## ðŸš€ Features
 - **Intelligent Allocation**: Advanced logic to identify and assign tasks to the best candidates.
 - **Real-time Updates**: Powered by Socket.io for instantaneous task status changes and notifications.
 - **Secure Authentication**: Robust user authentication using JWT and bcrypt for password hashing.
@@ -10,7 +10,7 @@ TaskManager is a modern, full-stack application designed to streamline task allo
 - **Task Analytics**: Comprehensive task tracking and status management.
 - **Responsive Design**: Fully optimized for desktops, tablets, and mobile devices.
 
-## 🛠️ Tech Stack
+## ðŸ› ï¸ Tech Stack
 
 ### Frontend
 - **Framework**: React 19 with Vite
@@ -30,27 +30,27 @@ TaskManager is a modern, full-stack application designed to streamline task allo
 - **Security**: JWT (JSON Web Tokens), Helmet, BcryptJS
 - **Logging**: Morgan
 
-## 📂 Project Structure
+## ðŸ“‚ Project Structure
 ```
-├── Backend/          # Node.js/Express API
-│   ├── config/       # Configuration files
-│   ├── controllers/  # Request handlers
-│   ├── middlewares/  # Custom Express middlewares
-│   ├── models/       # Mongoose schemas
-│   ├── routes/       # API endpoints
-│   ├── services/     # Business logic
-│   └── server.js     # Entry point
-├── Frontend/         # React Application
-│   ├── src/
-│   │   ├── api/      # Axios instances and API calls
-│   │   ├── features/ # Modular feature folder (Allocation, etc.)
-│   │   ├── pages/    # Main page components
-│   │   ├── components/# Reusable UI components
-│   │   └── main.tsx  # App entry point
-└── README.md         # Project documentation
+â”œâ”€â”€ Backend/          # Node.js/Express API
+â”‚   â”œâ”€â”€ config/       # Configuration files
+â”‚   â”œâ”€â”€ controllers/  # Request handlers
+â”‚   â”œâ”€â”€ middlewares/  # Custom Express middlewares
+â”‚   â”œâ”€â”€ models/       # Mongoose schemas
+â”‚   â”œâ”€â”€ routes/       # API endpoints
+â”‚   â”œâ”€â”€ services/     # Business logic
+â”‚   â””â”€â”€ server.js     # Entry point
+â”œâ”€â”€ Frontend/         # React Application
+â”‚   â”œâ”€â”€ src/
+â”‚   â”‚   â”œâ”€â”€ api/      # Axios instances and API calls
+â”‚   â”‚   â”œâ”€â”€ features/ # Modular feature folder (Allocation, etc.)
+â”‚   â”‚   â”œâ”€â”€ pages/    # Main page components
+â”‚   â”‚   â”œâ”€â”€ components/# Reusable UI components
+â”‚   â”‚   â””â”€â”€ main.tsx  # App entry point
+â””â”€â”€ README.md         # Project documentation
 ```
 
-## 🚥 Getting Started
+## ðŸš¥ Getting Started
 
 ### Prerequisites
 - Node.js (v18+)
@@ -79,8 +79,8 @@ TaskManager is a modern, full-stack application designed to streamline task allo
    npm run dev
    ```
 
-## 📝 License
+## ðŸ“ License
 This project is licensed under the ISC License.
 
-## 👥 Contributors
+## ðŸ‘¥ Contributors
 Developed by **Ved10ant**.
