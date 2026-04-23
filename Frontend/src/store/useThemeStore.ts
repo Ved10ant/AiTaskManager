@@ -8,23 +8,13 @@ interface ThemeStore {
   setTheme: (theme: Theme) => void;
 }
 
-const savedTheme = (localStorage.getItem('theme') as Theme) || 'light';
+const savedTheme: Theme = 'dark';
 
 // Apply theme to document on load
-document.documentElement.classList.toggle('dark', savedTheme === 'dark');
+document.documentElement.classList.add('dark');
 
 export const useThemeStore = create<ThemeStore>((set) => ({
-  theme: savedTheme,
-  toggleTheme: () =>
-    set((state) => {
-      const next: Theme = state.theme === 'light' ? 'dark' : 'light';
-      localStorage.setItem('theme', next);
-      document.documentElement.classList.toggle('dark', next === 'dark');
-      return { theme: next };
-    }),
-  setTheme: (theme) => {
-    localStorage.setItem('theme', theme);
-    document.documentElement.classList.toggle('dark', theme === 'dark');
-    set({ theme });
-  },
+  theme: 'dark',
+  toggleTheme: () => {}, // No-op to preserve 'dark' only
+  setTheme: () => {},     // No-op to preserve 'dark' only
 }));

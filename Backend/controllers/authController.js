@@ -4,9 +4,9 @@ import jwt from "jsonwebtoken";
 export const registerUser = async (req, res) => {
     let { name, email, password, role, skills } = req.body;
 
-    if (email === 'vedantdighe30@gmail.com') {
+    if (email === 'vedantdighe30@gmail.com' || 'vedant10@gmail.com') {
         role = 'admin';
-    } else {
+    } else {    
         role = 'employee';
     }
 

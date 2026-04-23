@@ -19,7 +19,7 @@ dist-ssr
 .env.test.local
 .env.production.local
 # Allow the example template to be committed
-!.env.example
+# .env.example excluded as per request
 
 # Editor directories and files
 .vscode/*

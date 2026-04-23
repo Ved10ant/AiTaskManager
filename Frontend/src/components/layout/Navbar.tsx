@@ -8,8 +8,6 @@ import {
   CheckSquare,
   ClipboardList,
   Briefcase,
-  Sun,
-  Moon,
   ChevronDown,
   User,
   Bell,
@@ -171,8 +169,6 @@ export const Navbar: React.FC = () => {
             <div className="flex items-center space-x-3">
               {user ? (
                 <>
-
-
                   {/* Notifications Bell */}
                   <div className="relative">
                     <button
@@ -369,30 +365,6 @@ export const Navbar: React.FC = () => {
 
               {/* Menu Items */}
               <div className="px-4 py-3 space-y-1">
-
-                {/* Theme Toggle */}
-                <button
-                  onClick={toggleTheme}
-                  className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl bg-gray-50 hover:bg-gray-100 dark:bg-white/5 dark:hover:bg-white/10 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    {theme === 'dark' ? (
-                      <Moon className="w-5 h-5 text-indigo-400" />
-                    ) : (
-                      <Sun className="w-5 h-5 text-amber-500" />
-                    )}
-                    <div className="text-left">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">
-                        {theme === 'dark' ? 'Dark Mode' : 'Light Mode'}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Tap to switch theme</p>
-                    </div>
-                  </div>
-                  {/* Visual toggle pill */}
-                  <div className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${theme === 'dark' ? 'bg-blue-600' : 'bg-gray-300'}`}>
-                    <span className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${theme === 'dark' ? 'translate-x-6' : 'translate-x-1'}`} />
-                  </div>
-                </button>
 
                 {/* Settings */}
                 <Link
