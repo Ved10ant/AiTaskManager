@@ -4,7 +4,8 @@ import { allocateTask, getBestCandidate } from "../features/allocation/services/
 import BestCandidateModal from "../features/allocation/components/BestCandidateModal";
 import { TaskForm } from "../features/tasks/components/TaskForm";
 import { TaskList } from "../features/tasks/components/TaskList";
-import { ArrowLeft, LayoutDashboard, Database } from "lucide-react";
+import { TaskHistoryModal } from "../features/tasks/components/TaskHistoryModal";
+import { ArrowLeft, LayoutDashboard, Database, History } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useUserStore } from "../store/useUserStore";
 
@@ -14,6 +15,7 @@ const TasksPage: React.FC = () => {
     const [creating, setCreating] = useState(false);
     const [selectedTask, setSelectedTask] = useState<any>(null);
     const [showBestCandidate, setShowBestCandidate] = useState(false);
+    const [showHistory, setShowHistory] = useState(false);
 
     const handleCreate = async (payload: any) => {
         setCreating(true);
@@ -35,7 +37,7 @@ const TasksPage: React.FC = () => {
         setShowBestCandidate(false);
         window.location.reload();
     };
-    
+
     const handleRecommend = async (taskId: string) => {
         try {
             const data = await getBestCandidate(taskId);
@@ -57,25 +59,33 @@ const TasksPage: React.FC = () => {
                         <h1 className="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-cyan-400 dark:to-purple-500">
                             Central Task Hub
                         </h1>
-                        <p className="text-gray-600 dark:text-gray-400 mt-1 flex items-center gap-2 text-sm"><Database size={14} className="text-purple-600 dark:text-purple-400"/> Synchronization Active</p>
+                        <p className="text-gray-600 dark:text-gray-400 mt-1 flex items-center gap-2 text-sm"><Database size={14} className="text-purple-600 dark:text-purple-400" /> Synchronization Active</p>
                     </div>
                 </div>
-                {user?.role === 'admin' && (
-                    <div className="bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 px-4 py-2 border border-emerald-200 dark:border-emerald-500/20 rounded-xl font-bold flex items-center gap-2 shadow-[0_0_15px_rgba(16,185,129,0.05)] dark:shadow-[0_0_15px_rgba(16,185,129,0.15)]">
-                        ● Admin Active
-                    </div>
-                )}
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => setShowHistory(true)}
+                        className="px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 rounded-xl font-bold flex items-center gap-2 transition-colors border border-indigo-500/20"
+                    >
+                        <History size={18} /> History
+                    </button>
+                    {user?.role === 'admin' && (
+                        <div className="bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 px-4 py-2 border border-emerald-200 dark:border-emerald-500/20 rounded-xl font-bold flex items-center gap-2 shadow-[0_0_15px_rgba(16,185,129,0.05)] dark:shadow-[0_0_15px_rgba(16,185,129,0.15)]">
+                            ● Admin Active
+                        </div>
+                    )}
+                </div>
             </header>
-            
+
             <main className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8">
                 <div>
                     <h2 className="text-xl font-bold mb-2 flex items-center gap-2 text-gray-900 dark:text-white">
-                        <LayoutDashboard className="text-purple-600 dark:text-purple-400" /> Active Tracking Board
+                        <LayoutDashboard className="text-purple-600 dark:text-purple-400" />
                     </h2>
                     <p className="text-gray-400 text-sm mb-4">View and monitor all intelligent assignments globally.</p>
                     <TaskList tasks={tasks} loading={loading} error={error} onRecommend={handleRecommend} />
                 </div>
-                
+
                 {user?.role === 'admin' && (
                     <div className="order-first lg:order-last">
                         <div className="sticky top-6">
@@ -87,12 +97,18 @@ const TasksPage: React.FC = () => {
 
             {showBestCandidate && selectedTask && (
                 <BestCandidateModal
-                    data={selectedTask} 
+                    data={selectedTask}
                     taskId={selectedTask._id}
                     onClose={() => setShowBestCandidate(false)}
                     onAssigned={handleAssigned}
                 />
             )}
+
+            <TaskHistoryModal
+                isOpen={showHistory}
+                onClose={() => setShowHistory(false)}
+                tasks={tasks}
+            />
         </div>
     );
 };

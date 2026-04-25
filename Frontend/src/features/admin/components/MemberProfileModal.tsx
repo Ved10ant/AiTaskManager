@@ -2,15 +2,30 @@ import React from "react";
 import { createPortal } from "react-dom";
 import { X, Calendar, Award, Star, Mail, Shield, Briefcase } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import toast from "react-hot-toast";
+import { deleteTask } from "../../tasks/services/taskService";
 
 interface MemberProfileModalProps {
     isOpen: boolean;
     onClose: () => void;
     member: any;
+    taskId?: string;
 }
 
-export const MemberProfileModal: React.FC<MemberProfileModalProps> = ({ isOpen, onClose, member }) => {
+export const MemberProfileModal: React.FC<MemberProfileModalProps> = ({ isOpen, onClose, member, taskId }) => {
     if (!member) return null;
+
+    const handleDeleteTask = async () => {
+        if (!taskId) return;
+        try {
+            await deleteTask(taskId);
+            toast.success("Task Deleted Successfully");
+            onClose();
+            window.location.reload();
+        } catch (error) {
+            toast.error("Failed to delete task");
+        }
+    };
 
     return createPortal(
         <AnimatePresence>
@@ -105,6 +120,12 @@ export const MemberProfileModal: React.FC<MemberProfileModalProps> = ({ isOpen, 
                                     Dedicated {member.role} with {member.experienceYears || 0} years of industry experience.
                                     Successfully managed {member.currentWorkload || 0} active modules with a consistent {member.performanceScore || 50}% efficiency rating.
                                 </p>
+                            </div>
+
+                            <div>
+                                <button onClick={handleDeleteTask} className="w-full py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold transition-all text-sm">
+                                    Delete Task
+                                </button>
                             </div>
                         </div>
 

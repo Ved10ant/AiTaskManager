@@ -5,10 +5,26 @@ import { useTasks } from '../features/tasks/hooks/useTasks';
 import { BarChart3, CheckCircle, Clock, ListTodo } from 'lucide-react';
 import { AdminMembers } from '../features/admin/components/AdminMembers';
 import { AdminRequests } from '../features/admin/components/AdminRequests';
+import { TaskList } from '../features/tasks/components/TaskList';
+import { getBestCandidate } from '../features/allocation/services/allocationService';
+import { useState } from 'react';
+import BestCandidateModal from '../features/allocation/components/BestCandidateModal';
 
 const DashboardPage = () => {
+    const [selectedTask, setSelectedTask] = useState<any>(null);
+    const [showBestCandidate, setShowBestCandidate] = useState(false);
+    const handleRecommend = async (taskId: string) => {
+        try {
+            const data = await getBestCandidate(taskId);
+            setSelectedTask({ ...data, _id: taskId });
+            setShowBestCandidate(true);
+        } catch (error) {
+            console.error("Failed to fetch recommendation", error);
+        }
+    }
+
     const user = useUserStore((state) => state.user);
-    const { tasks, loading } = useTasks();
+    const { tasks, loading, error } = useTasks();
 
     const pendingTasks = tasks.filter(t => t.status !== 'completed').length;
     const completedTasks = tasks.filter(t => t.status === 'completed').length;
@@ -73,6 +89,13 @@ const DashboardPage = () => {
                     </div>
                 </div>
             )}
+            {
+                user?.role === 'employee' && (
+                    <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[2fr_1.2fr] gap-6 mt-8">
+                        <TaskList tasks={tasks} loading={loading} error={error} onRecommend={handleRecommend} />
+                    </div>
+                )
+            }
         </div>
     );
 };

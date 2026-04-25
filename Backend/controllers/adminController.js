@@ -63,7 +63,7 @@ export const updateRequestStatus = async (req, res) => {
     try {
         const { id } = req.params;
         const { action } = req.body; // "approve" or "reject"
-        
+
         // Use findByIdAndUpdate to completely bypass Mongoose save() and validation errors
         const request = await TaskRequest.findById(id);
         if (!request) return res.status(404).json({ message: "Request not found" });
@@ -83,8 +83,8 @@ export const updateRequestStatus = async (req, res) => {
                 await Task.findByIdAndUpdate(task._id, { assignedTo: user._id });
 
                 // Increment user currentWorkload securely
-                await User.findByIdAndUpdate(user._id, { 
-                    $inc: { currentWorkload: 1 } 
+                await User.findByIdAndUpdate(user._id, {
+                    $inc: { currentWorkload: 1 }
                 });
             }
         }
@@ -98,13 +98,13 @@ export const updateRequestStatus = async (req, res) => {
         if (req.io && updatedRequest?.user?._id) {
             req.io.emit("notification", {
                 userId: updatedRequest.user._id,
-                message: action === "approve" 
-                    ? `Task request APPROVED: ${updatedRequest.task?.title}` 
+                message: action === "approve"
+                    ? `Task request APPROVED: ${updatedRequest.task?.title}`
                     : `Task request rejected for: ${updatedRequest.task?.title}`,
                 type: "request_status"
             });
         }
-            
+
         res.status(200).json({ message: `Request ${action}d successfully`, request: updatedRequest });
     } catch (error) {
         console.error("Update Request Error:", error);
